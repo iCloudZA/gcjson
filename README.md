@@ -1,5 +1,5 @@
 
-```markdown
+
 # GCJSON - High-Performance JSON Processing Library
 
 GCJSON 是一个高性能的 Go JSON 处理库，专为大规模、高频次的 JSON 数据处理场景设计。
