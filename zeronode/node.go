@@ -194,6 +194,81 @@ func (n Node) GetPath(keys ...string) Node {
 	return cur
 }
 
+// GetManyInto 一次扫描对象，将多个 key 的值写入 out（与 keys 对齐）。零分配。
+// 返回找到的数量。未命中时 out[i].typ == 0。
+func (n Node) GetManyInto(keys [][]byte, out []Node) int {
+	if n.typ != 'o' || len(keys) == 0 || len(out) < len(keys) {
+		return 0
+	}
+	// 清空 out（只清 typ 足够，其他字段按需写入）
+	for i := range keys {
+		out[i].typ = 0
+	}
+
+	remain := len(keys)
+	i := n.start + 1 // 跳过 '{'
+	for i < n.end && remain > 0 {
+		i = skipSpaces(n.raw, i)
+		if i >= n.end || n.raw[i] == '}' {
+			break
+		}
+		if n.raw[i] != '"' {
+			// 非法对象，直接停止
+			return len(keys) - remain
+		}
+
+		// 提取 key 边界
+		ks := i + 1
+		i++
+		for i < n.end && n.raw[i] != '"' {
+			if n.raw[i] == '\\' {
+				i++
+			}
+			i++
+		}
+		ke := i
+		i++
+		i = skipSpaces(n.raw, i)
+		if i >= n.end || n.raw[i] != ':' {
+			return len(keys) - remain
+		}
+		i++
+		i = skipSpaces(n.raw, i)
+
+		valStart, typ := skipWS(n.raw, i)
+		valEnd := findValueEnd(n.raw, valStart)
+
+		// 暴力匹配 keys（通常 key 个数很小，这样比建 map 更快且零分配）
+		kb := n.raw[ks:ke]
+	KL:
+		for idx := range keys {
+			want := keys[idx]
+			if out[idx].typ != 0 { // 已命中，跳过
+				continue
+			}
+			if len(kb) != len(want) {
+				continue
+			}
+			// 手写比较，避免 bytes.Equal 的额外开销
+			for j := 0; j < len(want); j++ {
+				if kb[j] != want[j] {
+					continue KL
+				}
+			}
+			out[idx] = Node{raw: n.raw, start: valStart, end: valEnd, typ: typ}
+			remain--
+			break
+		}
+
+		i = valEnd
+		i = skipSpaces(n.raw, i)
+		if i < n.end && n.raw[i] == ',' {
+			i++
+		}
+	}
+	return len(keys) - remain
+}
+
 // GetPathFast 是一次扫描完成多层路径查找的版本，比多次 Get 快很多。
 // 零分配，适合性能敏感场景。
 // GetPathFast 一次扫描完成多级路径解析（比递归 Get 快很多）

@@ -79,3 +79,16 @@ func BenchmarkGjsonForEach(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkGetManyInto(b *testing.B) {
+	json := []byte(`{"id":123,"name":"hello","flag":true,"count":456,"value":"deep value","number":9876}`)
+	node := FromBytes(json)
+
+	keys := [][]byte{[]byte("id"), []byte("name"), []byte("value"), []byte("number")}
+	out := make([]Node, len(keys))
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = node.GetManyInto(keys, out)
+	}
+}
