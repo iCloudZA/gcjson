@@ -3,6 +3,7 @@ package fast
 import (
 	"github.com/icloudza/gcjson/convert"
 	"github.com/tidwall/gjson"
+	"math"
 )
 
 //go:nosplit
@@ -139,4 +140,76 @@ func GetTopKeyFast(b []byte, key string) (gjson.Result, bool) {
 		continue
 	}
 	return gjson.Result{}, false
+}
+
+// ParseFloat 快速解析 JSON 数字（零分配）
+// 仅支持标准 JSON 格式，不支持 NaN/Inf
+func ParseFloat(b []byte) (float64, bool) {
+	if len(b) == 0 {
+		return 0, false
+	}
+	i := 0
+	neg := false
+	if b[i] == '-' {
+		neg = true
+		i++
+	}
+
+	// 整数部分
+	var intPart uint64
+	for i < len(b) {
+		c := b[i]
+		if c < '0' || c > '9' {
+			break
+		}
+		intPart = intPart*10 + uint64(c-'0')
+		i++
+	}
+
+	// 小数部分
+	var fracPart uint64
+	var fracDiv float64 = 1
+	if i < len(b) && b[i] == '.' {
+		i++
+		for i < len(b) {
+			c := b[i]
+			if c < '0' || c > '9' {
+				break
+			}
+			fracPart = fracPart*10 + uint64(c-'0')
+			fracDiv *= 10
+			i++
+		}
+	}
+
+	// 指数部分
+	expSign := 1
+	expVal := 0
+	if i < len(b) && (b[i] == 'e' || b[i] == 'E') {
+		i++
+		if i < len(b) && b[i] == '+' {
+			i++
+		} else if i < len(b) && b[i] == '-' {
+			expSign = -1
+			i++
+		}
+		for i < len(b) {
+			c := b[i]
+			if c < '0' || c > '9' {
+				break
+			}
+			expVal = expVal*10 + int(c-'0')
+			i++
+		}
+	}
+
+	// 组合
+	f := float64(intPart) + float64(fracPart)/fracDiv
+	if expVal != 0 {
+		f *= math.Pow10(expSign * expVal)
+	}
+	if neg {
+		f = -f
+	}
+	return f, true
 }

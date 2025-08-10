@@ -3,6 +3,27 @@
   <component name="GoORMHelperCache">
     <option name="schemaMapping">
       <map>
+        <entry key="Node">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/zeronode/node.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="User">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/../onProj/main.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UserWithData">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/../onProj/main.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="structInfo">
           <value>
             <set>
@@ -80,7 +101,7 @@
         <entry key="file://$PROJECT_DIR$/fast/fast.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1754838727915" />
+              <option name="lastModified" value="1754841740411" />
             </ScannedPath>
           </value>
         </entry>
@@ -166,10 +187,35 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/zeronode/benchmark_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754842658447" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/zeronode/node.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754842694101" />
+              <option name="schema">
+                <list>
+                  <option value="Node" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/../onProj/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1754838636414" />
+              <option name="lastModified" value="1754841124573" />
+              <option name="schema">
+                <list>
+                  <option value="User" />
+                  <option value="UserWithData" />
+                </list>
+              </option>
             </ScannedPath>
           </value>
         </entry>
@@ -184,8 +230,11 @@
     </option>
     <option name="tableStructMapping">
       <map>
+        <entry key="node" value="Node" />
         <entry key="struct_info" value="structInfo" />
         <entry key="test_struct" value="testStruct" />
+        <entry key="user" value="User" />
+        <entry key="user_with_data" value="UserWithData" />
       </map>
     </option>
     <option name="lastTimeChecked" value="1754825713412" />
