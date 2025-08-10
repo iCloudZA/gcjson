@@ -87,7 +87,7 @@
         <entry key="file://$PROJECT_DIR$/gcjson.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1754833502475" />
+              <option name="lastModified" value="1754834938015" />
             </ScannedPath>
           </value>
         </entry>
@@ -115,7 +115,35 @@
         <entry key="file://$PROJECT_DIR$/parser/number.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1754829621726" />
+              <option name="lastModified" value="1754836904796" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/parser/parseint.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754836452569" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/parser/parseinta.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754836592928" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/parser/parser.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754837139860" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/parser/parser_fallback.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754836992602" />
             </ScannedPath>
           </value>
         </entry>
@@ -141,7 +169,14 @@
         <entry key="file://$PROJECT_DIR$/../onProj/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1754833278404" />
+              <option name="lastModified" value="1754834473560" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$USER_HOME$/go/pkg/mod/github.com/i!cloud!z!a/gcjson@v0.0.0-20250810132332-6423b7f9e871/gcjson.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754833691896" />
             </ScannedPath>
           </value>
         </entry>

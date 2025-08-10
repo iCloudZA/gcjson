@@ -19,12 +19,11 @@ func init() {
 	gjson.DisableModifiers = true
 }
 
-// ===== 默认下钻键配置 =====
+// SetDefaultDrillKeys 默认下钻键配置
 func SetDefaultDrillKeys(keys ...string) {
 	picker.SetDefaultDrillKeys(keys...)
 }
 
-// ===== 内部核心函数 =====
 func get(b []byte, path string) Result {
 	if fast.IsSimpleTopKey(path) {
 		if r, ok := fast.GetTopKeyFast(b, path); ok {
@@ -37,43 +36,42 @@ func get(b []byte, path string) Result {
 	return gjson.GetBytes(b, path)
 }
 
-// ===== Get 封装 =====
-func GetAny(v any, path string) (Result, error) {
+func GetAny(v any, path string) (gjson.Result, error) {
 	b, err := convert.From(v)
 	if err != nil {
-		return Result{}, err
+		return gjson.Result{}, err
 	}
 	if len(b) > convert.MaxJSONSize {
-		return Result{}, errors.New("json too large")
+		return gjson.Result{}, errors.New("json too large")
 	}
 	return get(b, path), nil
 }
 
-func GetData(v any, path string) (Result, error) {
+func GetData(v any, path string) (gjson.Result, error) {
 	core := picker.PickData(v, picker.GetDefaultDrillKeys())
 	b, err := convert.From(core)
 	if err != nil {
-		return Result{}, err
+		return gjson.Result{}, err
 	}
 	if len(b) > convert.MaxJSONSize {
-		return Result{}, errors.New("json too large")
+		return gjson.Result{}, errors.New("json too large")
 	}
 	return get(b, path), nil
 }
 
-func GetDataWithKeys(v any, keys []string, path string) (Result, error) {
+func GetDataWithKeys(v any, keys []string, path string) (gjson.Result, error) {
 	core := picker.PickData(v, keys)
 	b, err := convert.From(core)
 	if err != nil {
-		return Result{}, err
+		return gjson.Result{}, err
 	}
 	if len(b) > convert.MaxJSONSize {
-		return Result{}, errors.New("json too large")
+		return gjson.Result{}, errors.New("json too large")
 	}
 	return get(b, path), nil
 }
 
-// ===== 自动类型推断 =====
+// Any 自动类型推断
 func Any(v any, path string) any {
 	r, err := GetAny(v, path)
 	if err != nil || len(r.Raw) == 0 {
@@ -105,7 +103,7 @@ func AnyDataWithKeys(v any, keys []string, path string) any {
 	return parser.ToNative(r)
 }
 
-// ===== 泛型直达 =====
+// AnyAs 泛型直达
 func AnyAs[T any](v any, path string) (T, bool) {
 	var zero T
 	r, err := GetAny(v, path)
@@ -133,7 +131,7 @@ func AnyDataAs[T any](v any, path string) (T, bool) {
 	return val, ok
 }
 
-// ===== 泛型快路径（零分配常见类型）=====
+// AnyAsFast 泛型快路径（零分配常见类型）
 func AnyAsFast[T any](v any, path string) (T, bool) {
 	var zero T
 	r, err := GetAny(v, path)
@@ -229,7 +227,7 @@ func AnyDataAsFast[T any](v any, path string) (T, bool) {
 	return val, ok
 }
 
-// ===== 类型检测 =====
+// TypeOfAny 类型检测
 func TypeOfAny(v any, path string) string {
 	r, err := GetAny(v, path)
 	if err != nil || len(r.Raw) == 0 {
@@ -286,34 +284,34 @@ func AnyMany(v any, paths ...string) ([]any, error) {
 	return out, nil
 }
 
-// ===== 迭代器 API =====
-func EachObject(v any, path string, fn func(k string, r Result) bool) bool {
+// EachObject 迭代器 API
+func EachObject(v any, path string, fn func(k string, r gjson.Result) bool) bool {
 	return iterator.EachObject(v, path, fn)
 }
 
-func EachArray(v any, path string, fn func(i int, r Result) bool) bool {
+func EachArray(v any, path string, fn func(i int, r gjson.Result) bool) bool {
 	return iterator.EachArray(v, path, fn)
 }
 
-func EachObjectBytes(v any, path string, fn func(keyBytes []byte, val Result) bool) bool {
+func EachObjectBytes(v any, path string, fn func(keyBytes []byte, val gjson.Result) bool) bool {
 	return iterator.EachObjectBytes(v, path, fn)
 }
 
-func EachArrayZero(v any, path string, fn func(i int, r Result) bool) bool {
+func EachArrayZero(v any, path string, fn func(i int, r gjson.Result) bool) bool {
 	return iterator.EachArrayZero(v, path, fn)
 }
 
-func ForEachArrayResult(v any, path string, fn func(idx int, r Result) bool) bool {
+func ForEachArrayResult(v any, path string, fn func(idx int, r gjson.Result) bool) bool {
 	return iterator.ForEachArrayResult(v, path, fn)
 }
 
-func ForEachDataArrayResult(v any, path string, fn func(idx int, r Result) bool) bool {
+func ForEachDataArrayResult(v any, path string, fn func(idx int, r gjson.Result) bool) bool {
 	r, err := GetData(v, path)
 	if err != nil || len(r.Raw) == 0 {
 		return false
 	}
 	i := 0
-	r.ForEach(func(_, val Result) bool {
+	r.ForEach(func(_, val gjson.Result) bool {
 		ok := fn(i, val)
 		i++
 		return ok
@@ -321,11 +319,11 @@ func ForEachDataArrayResult(v any, path string, fn func(idx int, r Result) bool)
 	return i > 0
 }
 
-func ForEachObjectResult(v any, path string, fn func(key string, r Result) bool) bool {
+func ForEachObjectResult(v any, path string, fn func(key string, r gjson.Result) bool) bool {
 	return iterator.ForEachObjectResult(v, path, fn)
 }
 
-// ===== 原始数据 API =====
+// Raw 原始数据 API
 func Raw(v any, path string) (string, bool) {
 	return raw.Get(v, path)
 }
