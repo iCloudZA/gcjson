@@ -9,6 +9,8 @@ import (
 	"github.com/icloudza/gcjson/parser"
 	"github.com/icloudza/gcjson/picker"
 	"github.com/icloudza/gcjson/raw"
+	"github.com/icloudza/gcjson/structfast"
+	"unsafe"
 
 	"github.com/tidwall/gjson"
 )
@@ -103,15 +105,69 @@ func AnyDataWithKeys(v any, keys []string, path string) any {
 	return parser.ToNative(r)
 }
 
-// AnyAs 泛型直达
+// AnyAs 泛型直达（带结构体直取快路径）。
+// 优先：结构体指针 + 纯字段路径 => structfast（无反射热路径）
+// 否则：按原逻辑将 v 转字节并走 JSON 路径。
 func AnyAs[T any](v any, path string) (T, bool) {
 	var zero T
+
+	// 结构体快路径：只有在 v 是 *struct 且 path 是字段链时启用
+	if isLikelyStructPath(path) {
+		// 直接尝试指针
+		if _, ok := v.(unsafe.Pointer); ok {
+			// 避免误判 raw pointer
+			goto JsonFallback
+		}
+		if val, ok := structfast.GetByPtr(v, path); ok {
+			if out, ok2 := val.(T); ok2 {
+				return out, true
+			}
+			return zero, false
+		}
+		// v 是结构体值（非指针）时，这里不做额外分配拿地址，保持零分配。
+		// 由调用方传 *T 可触发快路径；否则走 JSON 回退。
+	}
+
+JsonFallback:
+	// 原有 JSON 路径：GetAny -> parser.ToNative -> 断言
 	r, err := GetAny(v, path)
 	if err != nil || len(r.Raw) == 0 {
 		return zero, false
 	}
 	val, ok := parser.ToNative(r).(T)
 	return val, ok
+}
+
+// 仅允许 A.B.C 这种导出字段链：A-Za-z0-9_，每段首字母必须大写（导出）
+func isLikelyStructPath(p string) bool {
+	if p == "" {
+		return false
+	}
+	start := 0
+	for i := 0; i <= len(p); i++ {
+		if i == len(p) || p[i] == '.' {
+			seg := p[start:i]
+			if len(seg) == 0 {
+				return false
+			}
+			// 首字母大写（导出）
+			c := seg[0]
+			if !(c >= 'A' && c <= 'Z') {
+				return false
+			}
+			// 余下只允许字母/数字/下划线
+			for j := 1; j < len(seg); j++ {
+				ch := seg[j]
+				isAlpha := (ch|0x20) >= 'a' && (ch|0x20) <= 'z'
+				isDigit := ch >= '0' && ch <= '9'
+				if !(isAlpha || isDigit || ch == '_') {
+					return false
+				}
+			}
+			start = i + 1
+		}
+	}
+	return true
 }
 
 func AnyOrAs[T any](v any, path string, def T) T {
