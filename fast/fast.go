@@ -1,0 +1,142 @@
+package fast
+
+import (
+	"github.com/iCloudZA/gcjson/convert"
+	"github.com/tidwall/gjson"
+)
+
+//go:nosplit
+func IsSimpleTopKey(path string) bool {
+	if len(path) == 0 {
+		return false
+	}
+	for i := 0; i < len(path); i++ {
+		c := path[i]
+		// 允许 a-zA-Z0-9_-
+		if (c|0x20) >= 'a' && (c|0x20) <= 'z' {
+			continue
+		}
+		if c >= '0' && c <= '9' {
+			continue
+		}
+		if c == '_' || c == '-' {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
+//go:nosplit
+func GetTopKeyFast(b []byte, key string) (gjson.Result, bool) {
+	if len(b) < 2 || b[0] != '{' {
+		return gjson.Result{}, false
+	}
+	kb := convert.UnsafeStringToBytes(key)
+	i := 1
+	for i < len(b) {
+		// 跳过空白
+		for i < len(b) && b[i] <= 32 {
+			i++
+		}
+		if i >= len(b) || b[i] == '}' {
+			break
+		}
+		// 读取字符串 key
+		if b[i] != '"' {
+			return gjson.Result{}, false
+		}
+		i++
+		start := i
+		esc := false
+		for i < len(b) {
+			c := b[i]
+			i++
+			if esc {
+				esc = false
+				continue
+			}
+			if c == '\\' {
+				esc = true
+				continue
+			}
+			if c == '"' {
+				break
+			}
+		}
+		if i > len(b) {
+			return gjson.Result{}, false
+		}
+		ks := b[start : i-1]
+
+		// 冒号
+		for i < len(b) && b[i] <= 32 {
+			i++
+		}
+		if i >= len(b) || b[i] != ':' {
+			return gjson.Result{}, false
+		}
+		i++
+		for i < len(b) && b[i] <= 32 {
+			i++
+		}
+
+		// 比较 key（大小写敏感）
+		if len(ks) == len(kb) {
+			eq := true
+			for j := 0; j < len(kb); j++ {
+				if ks[j] != kb[j] {
+					eq = false
+					break
+				}
+			}
+			if eq {
+				// 直接在原 JSON 上用 gjson 取该 key（可靠且仍很快）
+				return gjson.GetBytes(b, key), true
+			}
+		}
+
+		// 跳过值到下一个逗号或对象结束（简化状态机）
+		depth := 0
+		inStr := false
+		esc2 := false
+		for i < len(b) {
+			c := b[i]
+			i++
+			if inStr {
+				if esc2 {
+					esc2 = false
+					continue
+				}
+				if c == '\\' {
+					esc2 = true
+					continue
+				}
+				if c == '"' {
+					inStr = false
+				}
+				continue
+			}
+			switch c {
+			case '"':
+				inStr = true
+			case '{', '[':
+				depth++
+			case '}', ']':
+				if depth == 0 && c == '}' {
+					goto NEXT
+				}
+				if depth > 0 {
+					depth--
+				}
+			case ',':
+				if depth == 0 {
+					goto NEXT
+				}
+			}
+		}
+	NEXT:
+		continue
+	}
+	return gjson.Result{}, false
+}
