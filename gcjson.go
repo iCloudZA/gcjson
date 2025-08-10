@@ -2,13 +2,13 @@ package gcjson
 
 import (
 	"errors"
-	"github.com/iCloudZA/gcjson/cache"
-	"github.com/iCloudZA/gcjson/convert"
-	"github.com/iCloudZA/gcjson/fast"
-	"github.com/iCloudZA/gcjson/iterator"
-	"github.com/iCloudZA/gcjson/parser"
-	"github.com/iCloudZA/gcjson/picker"
-	"github.com/iCloudZA/gcjson/raw"
+	"github.com/icloudza/gcjson/cache"
+	"github.com/icloudza/gcjson/convert"
+	"github.com/icloudza/gcjson/fast"
+	"github.com/icloudza/gcjson/iterator"
+	"github.com/icloudza/gcjson/parser"
+	"github.com/icloudza/gcjson/picker"
+	"github.com/icloudza/gcjson/raw"
 
 	"github.com/tidwall/gjson"
 )

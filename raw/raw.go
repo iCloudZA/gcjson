@@ -1,7 +1,7 @@
 package raw
 
 import (
-	"github.com/iCloudZA/gcjson/convert"
+	"github.com/icloudza/gcjson/convert"
 	"github.com/tidwall/gjson"
 )
 

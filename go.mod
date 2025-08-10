@@ -1,4 +1,4 @@
-module github.com/iCloudZA/gcjson
+module github.com/icloudza/gcjson
 
 go 1.24.5
 

@@ -2,7 +2,7 @@ package gcjson_test
 
 import (
 	"context"
-	"github.com/iCloudZA/gcjson"
+	"github.com/icloudza/gcjson"
 	"io"
 	"net/http"
 	"testing"
