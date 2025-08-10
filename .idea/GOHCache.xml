@@ -10,6 +10,28 @@
             </set>
           </value>
         </entry>
+        <entry key="Plan">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/path/plan.go" />
+              <option value="file://$PROJECT_DIR$/internal/pathplan.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Profile">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/../onProj/main.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Schema">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/structfast/structfast.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="User">
           <value>
             <set>
@@ -21,6 +43,43 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/../onProj/main.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="field">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/structfast/structfast.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="fieldElem">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/structfast/structfast.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="fieldPlan">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/structfast/plan.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="hotEntry">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/path/plan.go" />
+              <option value="file://$PROJECT_DIR$/internal/pathplan.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="seg">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/path/plan.go" />
+              <option value="file://$PROJECT_DIR$/internal/pathplan.go" />
             </set>
           </value>
         </entry>
@@ -37,6 +96,20 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/gjsonx_bench_test.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="typePlan">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/structfast/plan.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="view">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/gcjson.go" />
             </set>
           </value>
         </entry>
@@ -108,14 +181,61 @@
         <entry key="file://$PROJECT_DIR$/gcjson.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1754838727921" />
+              <option name="lastModified" value="1754854191385" />
+              <option name="schema">
+                <list>
+                  <option value="view" />
+                </list>
+              </option>
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/gjsonx_bench_test.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1754831645986" />
+              <option name="lastModified" value="1754852973212" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/path/plan.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754854064843" />
+              <option name="schema">
+                <list>
+                  <option value="seg" />
+                  <option value="Plan" />
+                  <option value="hotEntry" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/pathplan.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754854553318" />
+              <option name="schema">
+                <list>
+                  <option value="seg" />
+                  <option value="Plan" />
+                  <option value="hotEntry" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/pool.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754856063812" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/pool/pool.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754856094653" />
             </ScannedPath>
           </value>
         </entry>
@@ -130,6 +250,20 @@
           <value>
             <ScannedPath>
               <option name="lastModified" value="1754832728295" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/parser/bytes.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754853879708" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/parser/native_bytes.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754850606633" />
             </ScannedPath>
           </value>
         </entry>
@@ -157,7 +291,7 @@
         <entry key="file://$PROJECT_DIR$/parser/parser.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1754837139860" />
+              <option name="lastModified" value="1754850995079" />
             </ScannedPath>
           </value>
         </entry>
@@ -180,10 +314,79 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/raw/from.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754855520118" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/raw/plan.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754854695156" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/raw/raw.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1754838727918" />
+              <option name="lastModified" value="1754854948937" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/raw/raw_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754854948921" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/structfast/decode.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754855875806" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/structfast/decode_complex.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754855971103" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/structfast/dyn.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754854191389" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/structfast/plan.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754855914369" />
+              <option name="schema">
+                <list>
+                  <option value="fieldPlan" />
+                  <option value="typePlan" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/structfast/structfast.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754854191392" />
+              <option name="schema">
+                <list>
+                  <option value="field" />
+                  <option value="fieldElem" />
+                  <option value="Schema" />
+                </list>
+              </option>
             </ScannedPath>
           </value>
         </entry>
@@ -197,7 +400,7 @@
         <entry key="file://$PROJECT_DIR$/zeronode/node.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1754843458283" />
+              <option name="lastModified" value="1754856732216" />
               <option name="schema">
                 <list>
                   <option value="Node" />
@@ -209,13 +412,7 @@
         <entry key="file://$PROJECT_DIR$/../onProj/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1754841124573" />
-              <option name="schema">
-                <list>
-                  <option value="User" />
-                  <option value="UserWithData" />
-                </list>
-              </option>
+              <option name="lastModified" value="1754857053901" />
             </ScannedPath>
           </value>
         </entry>
@@ -230,11 +427,21 @@
     </option>
     <option name="tableStructMapping">
       <map>
+        <entry key="field" value="field" />
+        <entry key="field_elem" value="fieldElem" />
+        <entry key="field_plan" value="fieldPlan" />
+        <entry key="hot_entry" value="hotEntry" />
         <entry key="node" value="Node" />
+        <entry key="plan" value="Plan" />
+        <entry key="profile" value="Profile" />
+        <entry key="schema" value="Schema" />
+        <entry key="seg" value="seg" />
         <entry key="struct_info" value="structInfo" />
         <entry key="test_struct" value="testStruct" />
+        <entry key="type_plan" value="typePlan" />
         <entry key="user" value="User" />
         <entry key="user_with_data" value="UserWithData" />
+        <entry key="view" value="view" />
       </map>
     </option>
     <option name="lastTimeChecked" value="1754825713412" />

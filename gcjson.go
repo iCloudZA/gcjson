@@ -5,13 +5,10 @@ import (
 	"github.com/icloudza/gcjson/cache"
 	"github.com/icloudza/gcjson/convert"
 	"github.com/icloudza/gcjson/fast"
-	"github.com/icloudza/gcjson/iterator"
 	"github.com/icloudza/gcjson/parser"
 	"github.com/icloudza/gcjson/picker"
 	"github.com/icloudza/gcjson/raw"
 	"github.com/icloudza/gcjson/structfast"
-	"unsafe"
-
 	"github.com/tidwall/gjson"
 )
 
@@ -19,11 +16,6 @@ type Result = gjson.Result
 
 func init() {
 	gjson.DisableModifiers = true
-}
-
-// SetDefaultDrillKeys 默认下钻键配置
-func SetDefaultDrillKeys(keys ...string) {
-	picker.SetDefaultDrillKeys(keys...)
 }
 
 func get(b []byte, path string) Result {
@@ -105,37 +97,22 @@ func AnyDataWithKeys(v any, keys []string, path string) any {
 	return parser.ToNative(r)
 }
 
-// AnyAs 泛型直达（带结构体直取快路径）。
-// 优先：结构体指针 + 纯字段路径 => structfast（无反射热路径）
-// 否则：按原逻辑将 v 转字节并走 JSON 路径。
 func AnyAs[T any](v any, path string) (T, bool) {
 	var zero T
 
-	// 结构体快路径：只有在 v 是 *struct 且 path 是字段链时启用
+	// 结构体快路径：v 是 *struct 且 pathplan 是字段链
 	if isLikelyStructPath(path) {
-		// 直接尝试指针
-		if _, ok := v.(unsafe.Pointer); ok {
-			// 避免误判 raw pointer
-			goto JsonFallback
+		if out, ok := structfast.GetByPtrTyped[T](v, path); ok { // 泛型快路径
+			return out, true
 		}
-		if val, ok := structfast.GetByPtr(v, path); ok {
-			if out, ok2 := val.(T); ok2 {
-				return out, true
-			}
-			return zero, false
-		}
-		// v 是结构体值（非指针）时，这里不做额外分配拿地址，保持零分配。
-		// 由调用方传 *T 可触发快路径；否则走 JSON 回退。
 	}
 
-JsonFallback:
-	// 原有 JSON 路径：GetAny -> parser.ToNative -> 断言
+	// JSON 回退
 	r, err := GetAny(v, path)
 	if err != nil || len(r.Raw) == 0 {
 		return zero, false
 	}
-	val, ok := parser.ToNative(r).(T)
-	return val, ok
+	return parser.ToNativeTyped[T](r)
 }
 
 // 仅允许 A.B.C 这种导出字段链：A-Za-z0-9_，每段首字母必须大写（导出）
@@ -170,6 +147,44 @@ func isLikelyStructPath(p string) bool {
 	return true
 }
 
+type jtype byte
+
+const (
+	jtInvalid jtype = 0
+	jtString  jtype = 's'
+	jtNumber  jtype = 'n'
+	jtTrue    jtype = 't'
+	jtFalse   jtype = 'f'
+	jtNull    jtype = '0'
+	jtJSON    jtype = 'j' // object/array
+)
+
+type view struct {
+	raw  []byte
+	kind jtype
+}
+
+func viewFromG(r gjson.Result) view {
+	if len(r.Raw) == 0 {
+		return view{nil, jtInvalid}
+	}
+	switch r.Type {
+	case gjson.String:
+		return view{[]byte(r.Raw), jtString}
+	case gjson.Number:
+		return view{[]byte(r.Raw), jtNumber}
+	case gjson.True:
+		return view{[]byte(r.Raw), jtTrue}
+	case gjson.False:
+		return view{[]byte(r.Raw), jtFalse}
+	case gjson.Null:
+		return view{[]byte(r.Raw), jtNull}
+	default:
+		// 包括 JSON（对象/数组）
+		return view{[]byte(r.Raw), jtJSON}
+	}
+}
+
 func AnyOrAs[T any](v any, path string, def T) T {
 	if val, ok := AnyAs[T](v, path); ok {
 		return val
@@ -190,46 +205,53 @@ func AnyDataAs[T any](v any, path string) (T, bool) {
 // AnyAsFast 泛型快路径（零分配常见类型）
 func AnyAsFast[T any](v any, path string) (T, bool) {
 	var zero T
+
 	r, err := GetAny(v, path)
 	if err != nil || len(r.Raw) == 0 {
 		return zero, false
 	}
+	vw := viewFromG(r)
+
 	switch any(zero).(type) {
 	case string:
-		if r.Type == gjson.String {
-			return any(r.String()).(T), true
+		if vw.kind == jtString && len(vw.raw) >= 2 {
+			// 去引号（注意：不做反转义；需要反转义的场景用 AnyAs）
+			s := string(vw.raw[1 : len(vw.raw)-1])
+			return any(s).(T), true
 		}
 	case bool:
-		if r.Type == gjson.True || r.Type == gjson.False {
-			return any(r.Bool()).(T), true
+		if vw.kind == jtTrue {
+			return any(true).(T), true
 		}
-	case int64:
-		if r.Type == gjson.Number && parser.IsIntegerLiteral(r.Raw) {
-			if i, ok := parser.ParseIntFast(r.Raw); ok {
-				return any(i).(T), true
-			}
+		if vw.kind == jtFalse {
+			return any(false).(T), true
 		}
-	case int:
-		if r.Type == gjson.Number && parser.IsIntegerLiteral(r.Raw) {
-			if i, ok := parser.ParseIntFast(r.Raw); ok {
-				return any(int(i)).(T), true
+	case int, int64:
+		if vw.kind == jtNumber && parser.IsIntegerLiteralBytes(vw.raw) {
+			if i64, ok := parser.ParseIntFastBytes(vw.raw); ok {
+				if _, ok2 := any(zero).(int); ok2 {
+					return any(int(i64)).(T), true
+				}
+				return any(i64).(T), true
 			}
 		}
 	case float64:
-		if r.Type == gjson.Number {
-			if parser.IsIntegerLiteral(r.Raw) {
-				if i, ok := parser.ParseIntFast(r.Raw); ok {
-					return any(float64(i)).(T), true
+		if vw.kind == jtNumber {
+			if parser.IsIntegerLiteralBytes(vw.raw) {
+				if i64, ok := parser.ParseIntFastBytes(vw.raw); ok {
+					return any(float64(i64)).(T), true
 				}
-			} else {
-				if f, ok := parser.ParseFloat64(r.Raw); ok {
-					return any(f).(T), true
-				}
+			} else if f, ok := parser.ParseFloat64Bytes(vw.raw); ok {
+				return any(f).(T), true
 			}
 		}
 	}
-	val, ok := parser.ToNative(r).(T)
-	return val, ok
+
+	// 复杂类型 or 类型不匹配 → 回退
+	if out, ok := parser.ToNative(r).(T); ok {
+		return out, true
+	}
+	return zero, false
 }
 
 func AnyOrAsFast[T any](v any, path string, def T) T {
@@ -342,23 +364,87 @@ func AnyMany(v any, paths ...string) ([]any, error) {
 
 // EachObject 迭代器 API
 func EachObject(v any, path string, fn func(k string, r gjson.Result) bool) bool {
-	return iterator.EachObject(v, path, fn)
+	b, err := convert.From(v)
+	if err != nil {
+		return false
+	}
+	r := gjson.GetBytes(b, path)
+	if len(r.Raw) == 0 {
+		return false
+	}
+	ok := false
+	r.ForEach(func(k, v gjson.Result) bool { ok = true; return fn(k.String(), v) })
+	return ok
 }
 
 func EachArray(v any, path string, fn func(i int, r gjson.Result) bool) bool {
-	return iterator.EachArray(v, path, fn)
+	b, err := convert.From(v)
+	if err != nil {
+		return false
+	}
+	r := gjson.GetBytes(b, path)
+	if len(r.Raw) == 0 {
+		return false
+	}
+	i := 0
+	r.ForEach(func(_, v gjson.Result) bool { keep := fn(i, v); i++; return keep })
+	return i > 0
 }
 
 func EachObjectBytes(v any, path string, fn func(keyBytes []byte, val gjson.Result) bool) bool {
-	return iterator.EachObjectBytes(v, path, fn)
+	b, err := convert.From(v)
+	if err != nil {
+		return false
+	}
+	r := gjson.GetBytes(b, path)
+	if len(r.Raw) == 0 {
+		return false
+	}
+	hit := false
+	r.ForEach(func(k, v gjson.Result) bool {
+		if k.Index < 0 || k.Index+len(k.Raw) > len(b) {
+			return true
+		}
+		kb := b[k.Index : k.Index+len(k.Raw)]
+		if len(kb) >= 2 && kb[0] == '"' && kb[len(kb)-1] == '"' {
+			kb = kb[1 : len(kb)-1]
+		}
+		hit = true
+		return fn(kb, v)
+	})
+	return hit
 }
 
 func EachArrayZero(v any, path string, fn func(i int, r gjson.Result) bool) bool {
-	return iterator.EachArrayZero(v, path, fn)
+	b, err := convert.From(v)
+	if err != nil {
+		return false
+	}
+	r := gjson.GetBytes(b, path)
+	if len(r.Raw) == 0 {
+		return false
+	}
+	i := 0
+	r.ForEach(func(_, v gjson.Result) bool { keep := fn(i, v); i++; return keep })
+	return i > 0
 }
 
 func ForEachArrayResult(v any, path string, fn func(idx int, r gjson.Result) bool) bool {
-	return iterator.ForEachArrayResult(v, path, fn)
+	b, err := convert.From(v)
+	if err != nil {
+		return false
+	}
+	r := gjson.GetBytes(b, path)
+	if len(r.Raw) == 0 {
+		return false
+	}
+	i := 0
+	r.ForEach(func(_, val gjson.Result) bool {
+		ok := fn(i, val)
+		i++
+		return ok
+	})
+	return i > 0
 }
 
 func ForEachDataArrayResult(v any, path string, fn func(idx int, r gjson.Result) bool) bool {
@@ -376,7 +462,20 @@ func ForEachDataArrayResult(v any, path string, fn func(idx int, r gjson.Result)
 }
 
 func ForEachObjectResult(v any, path string, fn func(key string, r gjson.Result) bool) bool {
-	return iterator.ForEachObjectResult(v, path, fn)
+	b, err := convert.From(v)
+	if err != nil {
+		return false
+	}
+	r := gjson.GetBytes(b, path)
+	if len(r.Raw) == 0 {
+		return false
+	}
+	count := 0
+	r.ForEach(func(k, val gjson.Result) bool {
+		count++
+		return fn(k.String(), val)
+	})
+	return count > 0
 }
 
 // Raw 原始数据 API

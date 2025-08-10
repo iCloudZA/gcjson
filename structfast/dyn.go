@@ -5,7 +5,7 @@ import (
 	"unsafe"
 )
 
-// GetByPtr 动态类型版：ptr 必须是 *struct，path 如 "A.B.C"。
+// GetByPtr 动态类型版：ptr 必须是 *struct，pathplan 如 "A.B.C"。
 // 成功返回字段值（any）与 true；否则 (nil, false)。
 // 仅首次编译该结构体的 Schema 时用一次反射，之后全走 unsafe。
 func GetByPtr(ptr any, path string) (any, bool) {

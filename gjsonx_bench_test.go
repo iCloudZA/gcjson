@@ -3,13 +3,10 @@ package gcjson
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/icloudza/gcjson/raw"
 	"github.com/tidwall/gjson"
 	"testing"
 )
-
-func init() {
-	SetDefaultDrillKeys("data") // 保证 AnyData 下钻到 data
-}
 
 // 测试用复杂 JSON 数据
 var sampleJSON = []byte(`{
@@ -294,5 +291,35 @@ func BenchmarkHotPath_Cold(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		path := fmt.Sprintf("data.nested.flag%d", i%1000)
 		Any(sampleJSON, path)
+	}
+}
+
+var sampleJSON2 = []byte(`{
+	"logs": [
+		{"level": "info", "msg": "start"},
+		{"level": "error", "msg": "fail"}
+	],
+	"data": {
+		"user": {
+			"name": "Alice",
+			"age": 30
+		}
+	},
+	"meta": {
+		"version": "1.2.3"
+	}
+}`)
+
+func BenchmarkGetMany(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = raw.GetMany(sampleJSON2, "meta.version", "data.user.age")
+	}
+}
+
+func BenchmarkGetManyBytes(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, _ = raw.GetManyBytes(sampleJSON2, "logs.1.msg", "logs.0.msg")
 	}
 }

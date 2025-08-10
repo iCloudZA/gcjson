@@ -26,6 +26,10 @@ type Node struct {
 	typ   byte   // 节点类型
 }
 
+func New(b []byte) Node { return Node{raw: b} }
+
+func (n Node) RawBytes() []byte { return n.raw }
+
 //
 // ========================= 构造与类型判断 =========================
 //
@@ -44,6 +48,116 @@ func FromBytes(b []byte) Node {
 // Type 返回节点类型。
 // 返回值参考 Node.typ 说明。
 func (n Node) Type() byte { return n.typ }
+
+// ObjectKey 按 key 找子节点；失败返回 false
+func (n Node) ObjectKey(k string) (Node, bool) {
+	if n.typ != 'o' {
+		return Node{}, false
+	}
+	// 遍历对象找 key
+	i := n.start + 1 // 跳过 '{'
+	for i < n.end {
+		i = skipSpaces(n.raw, i)
+		if i >= n.end || n.raw[i] == '}' {
+			break
+		}
+		if n.raw[i] != '"' {
+			return Node{}, false
+		}
+		ks := i + 1
+		i++
+		for i < n.end && n.raw[i] != '"' {
+			if n.raw[i] == '\\' {
+				i++
+			}
+			i++
+		}
+		ke := i
+		i++
+		i = skipSpaces(n.raw, i)
+		if i >= n.end || n.raw[i] != ':' {
+			return Node{}, false
+		}
+		i++
+		i = skipSpaces(n.raw, i)
+
+		valStart, typ := skipWS(n.raw, i)
+		valEnd := findValueEnd(n.raw, valStart)
+
+		// 直接匹配 key
+		if ke-ks == len(k) {
+			match := true
+			for j := 0; j < len(k); j++ {
+				if n.raw[ks+j] != k[j] {
+					match = false
+					break
+				}
+			}
+			if match {
+				return Node{raw: n.raw, start: valStart, end: valEnd, typ: typ}, true
+			}
+		}
+
+		i = valEnd
+		i = skipSpaces(n.raw, i)
+		if i < n.end && n.raw[i] == ',' {
+			i++
+		}
+	}
+	return Node{}, false
+}
+
+// ArrayIndex 按 idx 找子节点；失败返回 false
+func (n Node) ArrayIndex(target int) (Node, bool) {
+	if target < 0 {
+		return Node{}, false
+	}
+	b := n.raw
+	i, _ := skipWS(b, 0)
+	if i >= len(b) || b[i] != '[' {
+		return Node{}, false
+	}
+	i++ // 跳过 '['
+
+	idx := 0
+	for {
+		i, _ = skipWS(b, i)
+		if i >= len(b) {
+			return Node{}, false
+		}
+		if b[i] == ']' { // 空数组或结束
+			return Node{}, false
+		}
+
+		valStart := i
+		valEnd, ok := skipValue(b, i)
+		if !ok {
+			return Node{}, false
+		}
+
+		if idx == target {
+			return Node{raw: b[valStart:valEnd]}, true
+		}
+
+		idx++
+		if idx > target {
+			return Node{}, false
+		}
+
+		i, _ = skipWS(b, valEnd)
+		if i >= len(b) {
+			return Node{}, false
+		}
+		if b[i] == ',' {
+			i++
+			continue
+		}
+		if b[i] == ']' {
+			return Node{}, false
+		}
+		return Node{}, false
+	}
+}
 
 //
 // ========================= 基本类型访问 =========================
@@ -83,17 +197,23 @@ func (n Node) Int() (int64, bool) {
 	if n.typ != 'n' {
 		return 0, false
 	}
-	i := n.start
-	neg := false
-	if n.raw[i] == '-' {
-		neg = true
-		i++
+	b := n.raw[n.start:n.end]
+	if len(b) == 0 {
+		return 0, false
+	}
+	neg := b[0] == '-'
+	i := 0
+	if neg {
+		if len(b) == 1 {
+			return 0, false
+		}
+		i = 1
 	}
 	var v int64
-	for ; i < n.end; i++ {
-		c := n.raw[i]
+	for ; i < len(b); i++ {
+		c := b[i]
 		if c < '0' || c > '9' {
-			break
+			return 0, false
 		}
 		v = v*10 + int64(c-'0')
 	}
@@ -413,6 +533,14 @@ func (n Node) ForEachArray(fn func(idx int, v Node) bool) {
 	}
 }
 
+// Raw 返回该节点在原始 JSON 中的切片（零拷贝，不做复制）
+func (n Node) Raw() []byte {
+	if n.raw == nil {
+		return nil
+	}
+	return n.raw[n.start:n.end]
+}
+
 //
 // ========================= 内部工具 =========================
 //
@@ -447,6 +575,156 @@ func skipSpaces(b []byte, i int) int {
 		i++
 	}
 	return i
+}
+
+// 跳过一个 JSON 值，返回值结束后的索引
+func skipValue(b []byte, i int) (int, bool) {
+	if i >= len(b) {
+		return 0, false
+	}
+	switch b[i] {
+	case '"':
+		return scanString(b, i)
+	case '{':
+		return scanObject(b, i)
+	case '[':
+		return scanArray(b, i)
+	case 't': // true
+		if i+4 <= len(b) &&
+			b[i] == 't' && b[i+1] == 'r' &&
+			b[i+2] == 'u' && b[i+3] == 'e' {
+			return i + 4, true
+		}
+		return 0, false
+	case 'f': // false
+		if i+5 <= len(b) &&
+			b[i] == 'f' && b[i+1] == 'a' &&
+			b[i+2] == 'l' && b[i+3] == 's' &&
+			b[i+4] == 'e' {
+			return i + 5, true
+		}
+		return 0, false
+	case 'n': // null
+		if i+4 <= len(b) &&
+			b[i] == 'n' && b[i+1] == 'u' &&
+			b[i+2] == 'l' && b[i+3] == 'l' {
+			return i + 4, true
+		}
+		return 0, false
+	default:
+		return scanNumber(b, i)
+	}
+}
+
+func scanString(b []byte, i int) (int, bool) {
+	i++
+	for i < len(b) {
+		c := b[i]
+		if c == '"' {
+			return i + 1, true
+		}
+		if c == '\\' {
+			i++
+			if i >= len(b) {
+				return 0, false
+			}
+			if b[i] == 'u' {
+				if i+4 >= len(b) {
+					return 0, false
+				}
+				i += 4
+			}
+		}
+		i++
+	}
+	return 0, false
+}
+
+func scanObject(b []byte, i int) (int, bool) {
+	i++
+	for {
+		i, _ = skipWS(b, i)
+		if i >= len(b) {
+			return 0, false
+		}
+		if b[i] == '}' {
+			return i + 1, true
+		}
+		if b[i] != '"' {
+			return 0, false
+		}
+		kEnd, ok := scanString(b, i)
+		if !ok {
+			return 0, false
+		}
+		i, _ = skipWS(b, kEnd)
+		if i >= len(b) || b[i] != ':' {
+			return 0, false
+		}
+		i++
+		i, _ = skipWS(b, i)
+		var okv bool
+		i, okv = skipValue(b, i)
+		if !okv {
+			return 0, false
+		}
+		i, _ = skipWS(b, i)
+		if i >= len(b) {
+			return 0, false
+		}
+		if b[i] == ',' {
+			i++
+			continue
+		}
+		if b[i] == '}' {
+			return i + 1, true
+		}
+		return 0, false
+	}
+}
+
+func scanArray(b []byte, i int) (int, bool) {
+	i++
+	for {
+		i, _ = skipWS(b, i)
+		if i >= len(b) {
+			return 0, false
+		}
+		if b[i] == ']' {
+			return i + 1, true
+		}
+		var okv bool
+		i, okv = skipValue(b, i)
+		if !okv {
+			return 0, false
+		}
+		i, _ = skipWS(b, i)
+		if i >= len(b) {
+			return 0, false
+		}
+		if b[i] == ',' {
+			i++
+			continue
+		}
+		if b[i] == ']' {
+			return i + 1, true
+		}
+		return 0, false
+	}
+}
+
+func scanNumber(b []byte, i int) (int, bool) {
+	start := i
+	if b[i] == '-' {
+		i++
+	}
+	for i < len(b) && ((b[i] >= '0' && b[i] <= '9') || b[i] == '.' || b[i] == 'e' || b[i] == 'E' || b[i] == '+' || b[i] == '-') {
+		i++
+	}
+	if i == start {
+		return 0, false
+	}
+	return i, true
 }
 
 // findValueEnd 查找 JSON 值的结束位置。

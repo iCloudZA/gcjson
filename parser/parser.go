@@ -92,3 +92,20 @@ func ToNative(r gjson.Result) any {
 		return r.Value()
 	}
 }
+
+func ToNativeTyped[T any](v any) (T, bool) {
+	var zero T
+	if out, ok := v.(T); ok {
+		return out, true
+	}
+	return zero, false
+}
+
+func ToNativeTypedBytes[T any](b []byte) (T, bool) {
+	var zero T
+	val := ToNativeBytes(b)
+	if out, ok := val.(T); ok {
+		return out, true
+	}
+	return zero, false
+}
