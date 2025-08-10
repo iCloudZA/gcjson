@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GoORMHelperCache">
+    <option name="schemaMapping">
+      <map>
+        <entry key="structInfo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/A/gcjson_back.go" />
+              <option value="file://$PROJECT_DIR$/gcjson.go" />
+              <option value="file://$PROJECT_DIR$/picker/picker.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="testStruct">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/gjsonx_bench_test.go" />
+            </set>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="scannedPathMapping">
+      <map>
+        <entry key="file://$PROJECT_DIR$/A/gcjson_back.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754829737082" />
+              <option name="schema">
+                <list>
+                  <option value="structInfo" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/cache/cache.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754829034196" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/cache/cache/hot.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754829575049" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/cache/hot.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754829603176" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/convert/convert.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754829613312" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/doc.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754832728273" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/example_http_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754828849834" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/fast/fast.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754829553108" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/gcjson.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754833502475" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/gjsonx_bench_test.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754831645986" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/iterator/iterator.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754829651192" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754832728295" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/parser/number.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754829621726" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/picker/picker.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754829632202" />
+              <option name="schema">
+                <list>
+                  <option value="structInfo" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/raw/raw.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754829665931" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/../onProj/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1754833278404" />
+            </ScannedPath>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="tableStructMapping">
+      <map>
+        <entry key="struct_info" value="structInfo" />
+        <entry key="test_struct" value="testStruct" />
+      </map>
+    </option>
+    <option name="lastTimeChecked" value="1754825713412" />
+  </component>
+</project>
